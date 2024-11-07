@@ -1,64 +1,108 @@
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.Serializable;
+import java.lang.reflect.Field;
 
-@Data
-@NoArgsConstructor
-public class Bcategory {
+public class DataObject implements Serializable, Cloneable, IData {
 
-    public static final Logger log = LoggerFactory.getLogger(Bcategory.class);
-
-    private Integer id = -1;
-    private Integer domainId;
-    private String name = "";
-    private Integer catDomainOrder;
-    private String expression = "";
-    private String desc = "";
-    private Boolean validated = false;
-
-    public void setValidated(boolean validated) {
-        this.validated = validated;
+    public DataObject() {
     }
 
-    public void setValidated(String value) {
-        this.validated = "Y".equalsIgnoreCase(value);
-    }
-
-    public String getValidatedString() {
-        return this.validated ? "Y" : "N";
-    }
-
+    /**
+     * Checks if the object is valid. Override in subclasses as needed.
+     * @return false as default.
+     */
     public boolean isValid() {
-        return domainId != null && catDomainOrder != null && name != null && !name.trim().isEmpty();
+        System.out.println("Invalid data -");
+        return false;
     }
 
-    public int compareByKeyTo(String value) {
-        return this.id.compareTo(Integer.valueOf(value));
+    /**
+     * Compares by key; override as necessary.
+     * @param key the key to compare
+     * @return comparison result; default is -1.
+     */
+    public int compareByKeyTo(String key) {
+        return -1;
     }
 
-    public int compareTo(Bcategory other) {
-        return this.id.compareTo(other.id);
+    /**
+     * Compares to another object; override as necessary.
+     * @param other the other object
+     * @return comparison result; default is -1.
+     */
+    public int compareTo(Object other) {
+        return -1;
     }
 
-    public void setKey(Integer key) {
-        this.id = (key != null) ? key : -1;
+    /**
+     * Sets the key. Override as necessary.
+     * @param key the key to set
+     */
+    public void setKey(Object key) {
+        // Override in subclass if needed
     }
 
-    public Integer getKey() {
-        return this.id;
+    /**
+     * Gets the key. Override as necessary.
+     * @return the key, default is null.
+     */
+    public Object getKey() {
+        return null;
     }
 
-    public String getMessageInfo() {
-        return this.name;
+    /**
+     * Gets message information, default is toString().
+     * @return message information as String.
+     */
+    public Object getMessageInfo() {
+        return this.toString();
     }
 
-    public void setDisplay(String display) {
-        this.name = display;
+    /**
+     * Sets insert information. Override as necessary.
+     * @param info information to set
+     */
+    public void setInsertInfo(Object info) {
+        // Override in subclass if needed
+    }
+
+    /**
+     * Clones the object. Tries to perform a shallow copy.
+     * @return a cloned object or the original if cloning fails.
+     */
+    @Override
+    public Object clone() {
+        Object clone;
+        Class<?> clazz = this.getClass();
+        Field[] fields = clazz.getDeclaredFields();
+
+        try {
+            if (fields.length > 0) {
+                clone = clazz.getDeclaredConstructor().newInstance();
+                for (Field field : fields) {
+                    field.setAccessible(true);
+                    field.set(clone, field.get(this));
+                }
+            } else {
+                clone = super.clone();
+            }
+        } catch (Exception e) {
+            clone = this;
+        }
+        return clone;
+    }
+
+    /**
+     * Sets the display value. Override in subclass as necessary.
+     * @param display the display object
+     */
+    public void setDisplay(Object display) {
+        // Override in subclass if needed
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return "DataObject{" +
+                "key=" + getKey() +
+                '}';
     }
 }
